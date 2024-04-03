@@ -9,6 +9,9 @@ class Event(models.Model):
     name = models.CharField(max_length=150, unique=True)
     start = models.DateTimeField()
     end = models.DateTimeField()
+    
+    def __str__(self):
+        return self.name
 
     
 class Artist(models.Model):
@@ -22,3 +25,6 @@ class Artist(models.Model):
     
     name = models.CharField(unique=True)
     music_genre = models.CharField(max_length=7, choices=MUSIC_GENRE_CHOICES)
+    
+    def __str__(self):
+        return self.name
