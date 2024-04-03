@@ -1,3 +1,11 @@
+"""
+Core module models.
+"""
+
 from django.db import models
 
-# Create your models here.
+class Event(models.Model):
+    """Event representation in db."""
+    name = models.CharField(max_length=150, unique=True)
+    start = models.DateTimeField()
+    end = models.DateTimeField()
