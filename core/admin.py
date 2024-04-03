@@ -1,3 +1,9 @@
 from django.contrib import admin
 
-# Register your models here.
+from .models import Artist
+
+class ArtistModelAdmin(admin.ModelAdmin):
+    pass
+
+
+admin.site.register(Artist, ArtistModelAdmin)
