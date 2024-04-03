@@ -1,0 +1,3 @@
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "simpleevent.settings" 
+addopts = "--create-db --cov=./ --cov-report=term"
