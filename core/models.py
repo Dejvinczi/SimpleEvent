@@ -31,3 +31,16 @@ class Artist(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class Performance(models.Model):
+    """Performance representation in db."""
+
+    event = models.ForeignKey(
+        Event,
+        on_delete=models.CASCADE,
+        related_name="performances",
+    )
+    artists = models.ManyToManyField(Artist, related_name="performances")
+    start = models.DateTimeField()
+    end = models.DateTimeField()
