@@ -28,10 +28,19 @@ class PerformanceSerializer(serializers.ModelSerializer):
         fields = ("id", "event", "artists", "start", "end")
 
     def validate(self, data: dict):
-        # Validations if "start" or "end" in data (getattr is for partial update)
+        """
+        Object validation. Validate timeframes of event and performances.
+
+        Parameters:
+            data (dict): The data to be validated.
+
+        Returns:
+            dict: The validated data.
+        """
+        # Validation timeframe if "start" or "end" in data (getattr is for partial update)
         if any(element in data for element in ["start", "end"]):
-            start = data.get("start", getattr(self.instance, "start"))
-            end = data.get("end", getattr(self.instance, "end"))
+            start = data.get("start", getattr(self.instance, "start", None))
+            end = data.get("end", getattr(self.instance, "end", None))
 
             # Check "end" is not "after" start.
             if start > end:
@@ -39,17 +48,16 @@ class PerformanceSerializer(serializers.ModelSerializer):
                 raise serializers.ValidationError({"end": message})
 
             # Check new performance are in event timeframe
-            event = data.get("event", getattr(self.instance, "event"))
+            event = data.get("event", getattr(self.instance, "event", None))
             if event.start > start or event.end < end:
-                message = _("Performance is out of the event timeframe")
+                message = _("Performance timeframe is out of the event timeframe")
                 raise serializers.ValidationError({"start": message, "end": message})
 
             # Check for event performances overlapping other timeframes
             if models.Performance.objects.filter(
-                Q(event=event)
-                & (Q(start__range=(start, end) | Q(end__range=(start, end))))
+                Q(event=event) & Q(start__lt=end) & Q(end__gt=start)
             ).exists():
-                message = _("Performance timeframe overlaps with anothers")
+                message = _("Performance timeframe overlaps with another")
                 raise serializers.ValidationError({"start": message, "end": message})
 
         return data
@@ -63,11 +71,19 @@ class EventSerializer(serializers.ModelSerializer):
         fields = ("id", "name", "start", "end")
 
     def validate(self, data):
-        # Validations if "start" or "end" in data (getattr is for partial update)
+        """
+        Object validation. Validate timeframes of event.
 
+        Parameters:
+            data (dict): The data to be validated.
+
+        Returns:
+            dict: The validated data.
+        """
+        # Validation timeframe if "start" or "end" in data (getattr is for partial update)
         if any(element in data for element in ["start", "end"]):
-            start = data.get("start", getattr(self.instance, "start"))
-            end = data.get("end", getattr(self.instance, "end"))
+            start = data.get("start", getattr(self.instance, "start", None))
+            end = data.get("end", getattr(self.instance, "end", None))
 
             # Check "end" is not "after" start.
             if start > end:
@@ -77,14 +93,25 @@ class EventSerializer(serializers.ModelSerializer):
         return data
 
     def update(self, instance, validated_data):
-        # Validations if "start" or "end" in data
+        """
+        Update object. Checks new timeframe event does not conflict
+        with event performances times frames.
+
+        Parameters:
+            instance (Event): Updated instance Event.
+            validated_data (dict): Validated data for the update.
+
+        Returns:
+            Event: Updated Event instance.
+        """
+        # Validation if "start" or "end" in data
         if any(element in validated_data for element in ["start", "end"]):
             start = validated_data.get("start", instance.start)
             end = validated_data.get("end", instance.end)
 
             # Check event performances is not out of new event timeframe
-            if models.Performance.objects.filter(
-                Q(event=instance) & (Q(start__lt=start) | Q(end__gt=end))
+            if instance.performances.filter(
+                Q(start__lt=start) | Q(end__gt=end)
             ).exists():
                 message = _("Some performances are outside of the event timeframe")
                 raise serializers.ValidationError({"start": message, "end": message})
