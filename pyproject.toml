@@ -1,3 +1,13 @@
 [tool.pytest.ini_options]
 DJANGO_SETTINGS_MODULE = "simpleevent.settings" 
-addopts = "--create-db --cov=./ --cov-report=term"
+addopts = "--create-db --cov=. --cov-report=term"
+
+[tool.coverage.run]
+omit = [
+    "manage.py",
+    "*/simpleevent/*",
+    "*/migrations/*",
+    "*/tests/*",
+    "*/test_*.py",
+    "*_tests.py"
+]
