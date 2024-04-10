@@ -53,14 +53,41 @@ class PerformanceSerializer(serializers.ModelSerializer):
                 message = _("Performance timeframe is out of the event timeframe")
                 raise serializers.ValidationError({"start": message, "end": message})
 
+        return data
+
+    def create(self, validated_data):
+        # Get the event and timeframe data from the validated data.
+        event = validated_data["event"]
+        start = validated_data["start"]
+        end = validated_data["end"]
+
+        # Check if there are any existing performances in the event timeframe.
+        if models.Performance.objects.filter(
+            Q(event=event) & Q(start__lt=end) & Q(end__gt=start)
+        ).exists():
+            # Raise a ValidationError if there are any overlapping performances.
+            message = _("Performance timeframe overlaps with another")
+            raise serializers.ValidationError({"start": message, "end": message})
+
+        return super().create(validated_data)
+
+    def update(self, instance, validated_data):
+        if any(element in validated_data for element in ["start", "end"]):
+            start = validated_data.get("start", instance.start)
+            end = validated_data.get("end", instance.end)
+
             # Check for event performances overlapping other timeframes
-            if models.Performance.objects.filter(
-                Q(event=event) & Q(start__lt=end) & Q(end__gt=start)
-            ).exists():
+            if (
+                models.Performance.objects.filter(
+                    Q(event=instance.event) & Q(start__lt=end) & Q(end__gt=start)
+                )
+                .exclude(id=instance.id)
+                .exists()
+            ):
                 message = _("Performance timeframe overlaps with another")
                 raise serializers.ValidationError({"start": message, "end": message})
 
-        return data
+        return super().update(instance, validated_data)
 
 
 class EventSerializer(serializers.ModelSerializer):
