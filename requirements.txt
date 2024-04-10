@@ -10,6 +10,7 @@ click==8.1.7
 click-didyoumean==0.3.1
 click-plugins==1.1.1
 click-repl==0.3.0
+coverage==7.4.4
 debugpy==1.8.1
 Django==5.0.4
 djangorestframework==3.15.1
@@ -28,6 +29,7 @@ pluggy==1.4.0
 prompt-toolkit==3.0.43
 psycopg2==2.9.9
 pytest==8.1.1
+pytest-cov==5.0.0
 pytest-django==4.8.0
 pytest-factoryboy==2.7.0
 python-dateutil==2.9.0.post0
