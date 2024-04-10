@@ -6,7 +6,7 @@ services:
     build:       
       context: .
       dockerfile: Dockerfile
-      target: dev
+      target: base
     ports:
       - "8000:8000"
       - "5678:5678"
