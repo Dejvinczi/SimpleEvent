@@ -54,7 +54,7 @@ def generate_csv_from_serialized_data(prefix, data):
     file_name = f"{prefix}_{timestamp}.csv"
     file_root = os.path.join(settings.MEDIA_ROOT, file_name)
     file_url = os.path.join(settings.MEDIA_URL, file_name)
-    field_names = data[0].keys()
+    field_names = data[0].keys() if len(data) else []
 
     if not os.path.exists(settings.MEDIA_ROOT):
         os.mkdir(settings.MEDIA_ROOT)

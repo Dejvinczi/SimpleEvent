@@ -84,9 +84,10 @@ class TestPublicEventAPI:
         assert response.status_code == 200
         assert response.data == serializer.data
 
-    def test_initiate_export_csv(self, api_client):
+    def test_initiate_export_csv(self, api_client, event_factory):
         """Test initiate export csv."""
         payload = {"webhook_url": "http://test.com/test"}
+        event_factory.create_batch(2)
         response = api_client.post(EVENT_INITIATE_EXPORT_CSV_URL, payload)
 
         assert response.status_code == 200
