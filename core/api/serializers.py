@@ -131,3 +131,21 @@ class EventRetrieveSerializer(EventSerializer):
     def get_performances(self, instance):
         performances = instance.performances.order_by("start")
         return PerformanceSerializer(performances, many=True).data
+
+
+class WebhookSerializer(serializers.Serializer):
+    """Webhook serializer."""
+
+    webhook_url = serializers.URLField(write_only=True)
+
+    def validate(self, data):
+        """
+        Validate the input data.
+        """
+        if not data["webhook_url"].startswith("http://") and not data[
+            "webhook_url"
+        ].startswith("https://"):
+            raise serializers.ValidationError(
+                "Invalid URL format. Must start with 'http://' or 'https://'."
+            )
+        return data
