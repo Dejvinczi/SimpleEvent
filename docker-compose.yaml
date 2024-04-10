@@ -6,13 +6,16 @@ services:
     build:       
       context: .
       dockerfile: Dockerfile
-      target: base
+      target: dev
     ports:
       - "8000:8000"
+      - "5678:5678"
     environment:
       - SECRET_KEY=${SECRET_KEY}
       - DEBUG=${DEBUG}
       - ALLOWED_HOSTS=${ALLOWED_HOSTS}
+      - CELERY_BROKER=${CELERY_BROKER}
+      - CELERY_BACKEND=${CELERY_BACKEND}
       - DB_HOST=db
       - DB_PORT=${DB_PORT}
       - DB_NAME=${DB_NAME}
@@ -35,6 +38,32 @@ services:
       - POSTGRES_USER=${DB_USER}
       - POSTGRES_PASSWORD=${DB_PASSWORD}
 
+  redis:
+    image: redis:alpine
+
+  celery:
+    build:       
+      context: .
+      dockerfile: Dockerfile
+      target: base
+    command: >
+      sh -c "celery -A simpleevent worker -l info"
+    environment:
+      - SECRET_KEY=${SECRET_KEY}
+      - DEBUG=${DEBUG}
+      - ALLOWED_HOSTS=${ALLOWED_HOSTS}
+      - CELERY_BROKER=${CELERY_BROKER}
+      - CELERY_BACKEND=${CELERY_BACKEND}
+      - DB_HOST=db
+      - DB_PORT=${DB_PORT}
+      - DB_NAME=${DB_NAME}
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+    volumes:
+      - ./:/app
+    depends_on:
+      - redis
+      - db
 
 volumes:
   postgres-data:
